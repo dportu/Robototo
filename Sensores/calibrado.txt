@@ -1,0 +1,11 @@
+Calibrado del sensor  SHARP:
+Lectura máxima: 936
+Lectura mínima: 6
+Valor de la lectura para un objeto situado a 7cm: 560
+
+Calibrado del sensor CNY70:
+Lectura máxima: 945
+Lectura mínima: 2
+Valor de la lectura cuando el sensor está sobre la línea negra: 110
+Valor de la lectura cuando el sensor está sobre un folio blanco: 940
+

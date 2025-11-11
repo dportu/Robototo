@@ -1,0 +1,12 @@
+Valores de PWM sirven para girar en un sentido u otro.
+PWM para giros horarios:     100 <= PWM <  150 
+PWM para giros antihorarios: 150 <  PWM <= 200
+
+Valor de pwm que hace que el servo se pare.
+PWM motores quietos: 150
+
+Tiempo que se invierte en las tareas de sense-think-act (prueba con la lectura del sensor SHARP)
+Tiempo de proceso:
+
+Tiempo de control seleccionado
+Tiempo de control:
