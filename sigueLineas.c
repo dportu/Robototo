@@ -8,8 +8,8 @@
 #define BASE 100
 #define SPI_CHAN 0
 
-#define PinMotor0 23 // pwm_1 BCM13 Fisico 33 CONECTAR A B13
-#define PinMotor1 26 // pwm_0 BCM12 Fisico 32 CONECTAR A B12
+#define PinMotorDer 23 // pwm_1 BCM13 Fisico 33 CONECTAR A B13
+#define PinMotorIz 26 // pwm_0 BCM12 Fisico 32 CONECTAR A B12
 
 #define INFRARROJO_DERECHA 3
 #define SHARP_DERECHA 1
@@ -18,6 +18,7 @@
 
 #define UMBRAL_OBSTACULO 500
 #define UMBRAL_INFRARROJO 150 // El umbral de infrarrojo es inverso, es decir se detecta la linea negra cuando el valor leido es menor que el umbral
+#define PARADA 150
 
 
 int main(int argc, char *argv[]) {
@@ -37,7 +38,8 @@ int main(int argc, char *argv[]) {
     
  
 
-    int pwm;
+    int pwmD = 150;
+    int pwmI = 150;
     int lecturaSharpDerecho;
     int lecturaSharpIzquierdo;
     int lecturaInfrarrojoDerecho;
@@ -46,12 +48,19 @@ int main(int argc, char *argv[]) {
     int infraD = 1;
     int infraI = 1;
 
+    unsigned int tcontrol = 20000; //en microsegundos
+
     while(1) {
         lecturaSharpDerecho = analogRead(BASE+SHARP_DERECHA);
         lecturaSharpIzquierdo = analogRead(BASE+SHARP_IZQUIERDA);
+        unsigned int prev_time = micros();
+        
+        unsigned int tstart = micros();
+
         if(lecturaSharpDerecho > UMBRAL_OBSTACULO || lecturaSharpIzquierdo > UMBRAL_OBSTACULO) {
             // Obstaculo detectado : Paramos
-            pwm = 150;
+            pwmWrite(PinMotorDer,PARADA);
+            pwmWrite(PinMotorIz,PARADA);
         }
         else {
             // Ciclo de Control
@@ -65,25 +74,35 @@ int main(int argc, char *argv[]) {
                 infraI = 1;
             }
 
-            
-        }
 
-        //Controlador
+            if(infraD && infraI) {
+                //ir recto
+                pwmD = 200;
+                pwmI = 100;
+            }
+            else if(infraD && !infraI) {
+                //girar a la derecha
+                pwmD = 160;
+                pwmI = 100;
+            }
+            else if(!infraD && infraI) {
+                //giro a la izquierda
+                pwmD = 200;
+                pwmI = 140;
+            }
+            else {
+                //retroceso
+                pwmD = 100;
+                pwmI = 200;
+            }
 
-        if(error > desiredDistance + marginOfError) { // Estamos demasiado lejos
-            pwm = 200;
-            printf("Estoy demasiado lejos\n\n");
+            pwmWrite(PinMotorDer,pwmD);
+            pwmWrite(PinMotorIz,pwmI);
         }
-        else if(error < desiredDistance - marginOfError) { // Estamos demasiado cerca
-            pwm = 100;
-            printf("Estoy demasiado cerca\n\n");
-        }
-        else { // Estamos dentro de la zona aceptable
-            pwm = 150;
-            printf("Estoy en el sweet spot :)\n\n");
-        }
+        if (tcycle < tcontrol)
+            usleep((tcontrol - tcycle));
+        else
+            printf("Ciclo más largo que el tiempo de control\n");
 
-        pwmWrite(PinMotor0,pwm);
-        pwmWrite(PinMotor1,pwm);
     }
 }
